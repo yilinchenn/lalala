@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, make_response, flash, redirect
+from flask import render_template, url_for, request, make_response, flash, redirect, session
 from app import webapp
 from app.models import User
 
@@ -9,6 +9,9 @@ def login():
     else:
         return render_template("login_form.html")
 
+@webapp.route('/logout', methods=["POST"])
+def logout():
+    return do_logout(request.form)
 
 def do_login(form):
     if(form):
@@ -18,8 +21,9 @@ def do_login(form):
         usr = User.query.filter_by(username=username).first()
         if(usr):
             if(usr.check_password(password)):
-                flash("INFO: log in successful")
-                return redirect(url_for("dashboard"))
+                #set session
+                session['username'] = username
+                return redirect(url_for("dashboard", username=username))
             else:
                 flash("ERROR: wrong password")
                 return redirect(url_for("login"))
@@ -27,9 +31,14 @@ def do_login(form):
             flash("ERROR: user does not exist")
             return redirect(url_for("login"))
 
+def do_logout(form):
+    if(check_session(form.get("username"))):
+        session.pop('username', None)
+        flash("INFO: logout successful")
+        return redirect(url_for('login'))
 
-    return make_response("not implemented")
-
-
-
-
+def check_session(username):
+    if(session.get('username')):
+        if username == session['username']:
+            return True
+    return False

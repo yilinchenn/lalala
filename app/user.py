@@ -34,5 +34,5 @@ def do_create_user(form):
         print(usr)
         db.session.add(usr)
         db.session.commit()
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard', username=usr.username))
 
