@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, make_response
+from flask import render_template, url_for, request, make_response, flash, redirect
 from app import webapp
 from app.models import User
 
@@ -18,11 +18,14 @@ def do_login(form):
         usr = User.query.filter_by(username=username).first()
         if(usr):
             if(usr.check_password(password)):
-                return "log in successful"
+                flash("INFO: log in successful")
+                return redirect(url_for("dashboard"))
             else:
-                return "wrong password"
+                flash("ERROR: wrong password")
+                return redirect(url_for("login"))
         else:
-            return "user does not exist"
+            flash("ERROR: user does not exist")
+            return redirect(url_for("login"))
 
 
     return make_response("not implemented")
