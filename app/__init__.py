@@ -28,6 +28,7 @@ from app import models
 from app import main
 from app import login
 from app import user
+from app import photo
 
 
 

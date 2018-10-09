@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, redirect
+from flask import render_template, url_for, request, redirect, session
 from app import webapp
 from app.models import User
 from app import db
@@ -34,5 +34,8 @@ def do_create_user(form):
         print(usr)
         db.session.add(usr)
         db.session.commit()
+
+        # set session
+        session['username'] = usr.username
         return redirect(url_for('dashboard', username=usr.username))
 
