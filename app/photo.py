@@ -1,10 +1,9 @@
-from flask import render_template, url_for, request, redirect
+from flask import render_template, url_for, request, redirect, flash, abort
 import uuid
-from enum import Enum
 
 from app import webapp
-from app.models import User
-from app.models import Photo
+from app.models import User, Photo, PhotoType
+from app.login import check_session
 from app import db
 
 @webapp.route('/test/FileUpload', methods=["GET", "POST"])
@@ -12,14 +11,34 @@ def testUpload():
     if(request.method == 'POST'):
         return do_test_upload(request.form)
     else:
+        #print("UPLOAD FOLDER: %s" % webapp.config['UPLOAD_FOLDER'])
         return render_template('test_upload.html')
+
+
+@webapp.route('/upload/<username>', methods=["POST"])
+def upload_photo(username):
+    if(request.method == 'POST'):
+        if (check_session(username)):
+            photos = get_transformations()
+            usr = User.query.filter_by(username=username).first()
+            if (usr):
+                save_photos(usr, photos)
+                return redirect(url_for('dashboard', username=username))
+            else:
+                # cannot find user with username stored in session
+                # should be impossible
+                abort(500)
+
+        flash("ERROR: you are not logged in")
+        return redirect(url_for('login'))
+
 
 def do_test_upload(form):
     username = form.get('userID')
     password = form.get('password')
 
     #TODO get the files themselves
-    photos = get_tranformed_photos()
+    photos = get_transformations()
 
     usr = User.query.filter_by(username=username).first()
     if(usr):
@@ -49,15 +68,6 @@ def assemble_path(first, second, third):
 
 
 
-# return a list of transformed photos
-# 0 = thumbnail
-# 1 = orignal
-# 2 = whatever
-# 3 = llallala
-def get_tranformed_photos():
-    #TODO: yilin implement this function
-    return [0,1,2,3]
-
 
 def get_thumbs(username):
     usr = User.query.filter_by(username=username).first()
@@ -74,16 +84,15 @@ def get_thumbs(username):
     return thumbnails
 
 
+# return a list of transformed photos
+# 0 = thumbnail
+# 1 = orignal
+# 2 = whatever
+# 3 = llallala
 def get_transformations():
-    #TODO implement
-    return None
+    #TODO: yilin implement this function
+    return [0,1,2,3]
 
-
-class PhotoType(Enum):
-    THUMBNAIL = 0
-    ORIGINAL = 1
-    BLACKWHITE = 2
-    SEPIA = 3
 
 
 

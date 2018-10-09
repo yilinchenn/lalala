@@ -1,4 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+from enum import Enum
 
 from app import db
 
@@ -39,3 +40,10 @@ class Photo(db.Model):
 
     def __repr__(self):
         return '<id %s Photo_id %s type %s user_id %s>' % (self.id, self.photo_id, self.type, self.user_id)
+
+
+class PhotoType(Enum):
+    THUMBNAIL = 0
+    ORIGINAL = 1
+    BLACKWHITE = 2
+    SEPIA = 3

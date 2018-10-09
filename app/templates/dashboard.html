@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        h1.title{
+            margin-bottom: 0px;
+        }
+        div.gs {
+            margin-top: 10px;
+        }
         div.gallery {
             margin: 5px;
             border: 1px solid #ccc;
@@ -28,24 +34,38 @@
 </head>
 <body>
 
-<h1> Welcome {{session['username']}}</h1>
+<h1 class="title"> Welcome user: {{session['username']}}</h1>
 <br>
 <form method="POST" action={{url_for('logout')}}>
     <input type="hidden" name="username" value="{{session['username']}}">
     <input type="submit" value="Log out">
 </form>
+<br>
+
+ <form action="/upload/{{session['username']}}"  enctype="multipart/form-data" method="post">
+     <label> Upload a new photo </label> <br>
+     <input type="file" name="uploadedfile"><br/>
+     <input type="submit" value="Send">
+     <input type="reset">
+</form>
 
 
-{% for thumb in thumbs %}
 
-<div class="gallery">
-  <a target="_blank" href="img_5terre.jpg">
-    <img src="5terre.jpg" alt="5Terre" width="600" height="400">
-  </a>
-  <div class="desc">{{thumb.photo_id}}</div>
+<div class = "gs">
+    <h2>Your photos</h2>
+
+    {% for thumb in thumbs %}
+
+    <div class="gallery">
+      <a target="_blank" href="img_5terre.jpg">
+        <img src="5terre.jpg" alt="5Terre" width="600" height="400">
+      </a>
+      <div class="desc">{{thumb.photo_id}}</div>
+    </div>
+
+    {% endfor %}
 </div>
 
-{% endfor %}
 
 
 
