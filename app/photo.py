@@ -1,5 +1,6 @@
 from flask import render_template, url_for, request, redirect
 import uuid
+from enum import Enum
 
 from app import webapp
 from app.models import User
@@ -58,9 +59,31 @@ def get_tranformed_photos():
     return [0,1,2,3]
 
 
+def get_thumbs(username):
+    usr = User.query.filter_by(username=username).first()
+    #print(usr)
+    photos = usr.photos
+    #print(photos)
+    thumbnails = []
+
+    for photo in photos:
+        if photo.type == PhotoType.THUMBNAIL.value:
+            #print("=========================================")
+            #print(photo)
+            thumbnails.append(photo)
+    return thumbnails
 
 
+def get_transformations():
+    #TODO implement
+    return None
 
+
+class PhotoType(Enum):
+    THUMBNAIL = 0
+    ORIGINAL = 1
+    BLACKWHITE = 2
+    SEPIA = 3
 
 
 
