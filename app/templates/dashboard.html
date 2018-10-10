@@ -36,6 +36,16 @@
 
 <h1 class="title"> Welcome user: {{session['username']}}</h1>
 <br>
+
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    {% for msg in messages %}
+        <p class="flash">{{msg}}</p>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
 <form method="POST" action={{url_for('logout')}}>
     <input type="hidden" name="username" value="{{session['username']}}">
     <input type="submit" value="Log out">
@@ -58,7 +68,7 @@
 
     <div class="gallery">
       <a target="_blank" href="img_5terre.jpg">
-        <img src="5terre.jpg" alt="5Terre" width="600" height="400">
+        <img src="" alt="5Terre" width="600" height="400">
       </a>
       <div class="desc">{{thumb.photo_id}}</div>
     </div>
