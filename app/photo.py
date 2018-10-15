@@ -40,10 +40,16 @@ def upload_photo(username):
             #file is ok
             filename = secure_filename(file.filename)
             print("=======FOUND FILE======== %s" % filename)
-            photos = get_transformations(file)
+
+
+
             usr = User.query.filter_by(username=username).first()
             if (usr):
-                save_photos(usr, photos)
+
+                temp_file_path = save_temp_photo(usr, file)
+                photos = get_transformations(temp_file_path)
+
+                #save_photos(usr, photos)
                 return redirect(url_for('dashboard', username=username))
             else:
                 # cannot find user with username stored in session
@@ -71,14 +77,28 @@ def do_test_upload(form):
                 #filename = secure_filename(file.filename)
                 return 'Error: file type not allowed'
 
-            # TODO get the files themselves
-            photos = get_transformations(file)
+            temp_file_path = save_temp_photo(usr, file)
 
-            save_photos(usr, photos)
+
+            # TODO get the files themselves
+            photos = get_transformations(temp_file_path)
+
+            #save_photos(usr, photos)
             return '.'.join(str(e) for e in photos)
         else:
             return "ERROR: Wrong password"
     return "ERROR: user does not exist"
+
+
+def save_temp_photo(user, photo):
+    #temp path
+    path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + "temp/" + photo.filename
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    photo.save(path)
+    return path
+
+
 
 
 def save_photos(user, photos):
