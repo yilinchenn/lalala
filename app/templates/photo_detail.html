@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Photo Detail</title>
+</head>
+<body>
+
+<div class = "gs">
+    <h2>Your photos</h2>
+
+    {% for type in types %}
+
+    <div class="gallery">
+        <p> {{type.name}} </p>
+        <img src="{{url_for('display_image', photo_id=photo_id, type=type.value)}}" alt="">
+    </div>
+
+    {% endfor %}
+</div>
+
+
+
+
+
+
+
+</body>
+</html>

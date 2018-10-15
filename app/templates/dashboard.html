@@ -67,8 +67,8 @@
     {% for thumb in thumbs %}
 
     <div class="gallery">
-      <a target="_blank" href="img_5terre.jpg">
-        <img src="{{thumb.path}}" alt="5Terre" width="600" height="400">
+      <a target="_blank" href="{{url_for('display_images', photo_id=thumb.photo_id)}}">
+        <img src="{{url_for('display_image', photo_id=thumb.photo_id, type=thumb.type)}}" alt="" height="200">
       </a>
       <div class="desc">{{thumb.photo_id}}</div>
     </div>

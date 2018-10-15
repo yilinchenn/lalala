@@ -47,3 +47,5 @@ class PhotoType(Enum):
     ORIGINAL = 1
     BLACKWHITE = 2
     FLIPPED = 3
+
+

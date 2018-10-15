@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, redirect, flash, abort
+from flask import render_template, url_for, request, redirect, flash, abort, send_from_directory
 from werkzeug.utils import secure_filename
 import uuid
 import os
@@ -11,6 +11,17 @@ from wand.image import Image
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
+@webapp.route('/photos/<photo_id>', methods=["GET"])
+def display_images(photo_id):
+    return render_template("photo_detail.html", photo_id= photo_id, types = PhotoType)
+
+
+@webapp.route('/photo/<photo_id>/<type>', methods=["GET"])
+def display_image(photo_id, type):
+    photo = Photo.query.filter_by(photo_id=photo_id, type=type).first()
+    print("==============================DISPLAY======================= %s" % photo.path)
+
+    return send_from_directory(os.path.dirname(photo.path), photo.path.split('/')[-1], as_attachment=True)
 
 @webapp.route('/test/FileUpload', methods=["GET", "POST"])
 def testUpload():
