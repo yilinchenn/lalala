@@ -46,4 +46,4 @@ class PhotoType(Enum):
     THUMBNAIL = 0
     ORIGINAL = 1
     BLACKWHITE = 2
-    SEPIA = 3
+    FLIPPED = 3
