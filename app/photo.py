@@ -1,6 +1,7 @@
 from flask import render_template, url_for, request, redirect, flash, abort
 from werkzeug.utils import secure_filename
 import uuid
+import os
 
 from app import webapp
 from app.models import User, Photo, PhotoType
@@ -84,18 +85,30 @@ def save_photos(user, photos):
     #TODO photos = [0, 1, 2, 3]
     #same photo_id for all types
     #of the same photo
+    db_photos = []
     photo_id = str(uuid.uuid4())
-    for photo in photos:
+    for index, photo in enumerate(photos):
         #TODO change type to actual type
-        type = photo
-        path = assemble_path(user.username, photo_id, type)
+        type = index
+        #new filename = type.[original file type]
+        new_file_name = photo_id + "." + photo.filename.split('.')[1]
+        path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + str(type) + "/" + new_file_name
         p = Photo(photo_id=photo_id, type=type, path=path)
+        db_photos.append(p)
         user.photos.append(p)
-    db.session.commit()
-    return
 
-def assemble_path(first, second, third):
-    return "/" + str(first) + "/" + str(second) + "/" + str(third) + ".jpg"
+    #try to save to file
+    try:
+        for index, photo in enumerate(photos):
+            print("========================SAVING========================= %s" % db_photos[index].path)
+            os.makedirs(os.path.dirname(db_photos[index].path), exist_ok=True)
+            photo.save(db_photos[index].path)
+    except:
+        #if files are not saved then do not save to db
+        db.session.rollback()
+    finally:
+        db.session.commit()
+    return
 
 
 
@@ -122,7 +135,10 @@ def get_thumbs(username):
 # 3 = llallala
 def get_transformations(photo):
     #TODO: yilin implement this function
-    return [0,1,2,3]
+    photos = []
+    for type in PhotoType:
+        photos.append(photo)
+    return photos
 
 def allowed_file(filename):
     return '.' in filename and \

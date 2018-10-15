@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('photo_id', sa.String(length=80), nullable=False),
     sa.Column('type', sa.Integer(), nullable=False),
-    sa.Column('path', sa.String(length=80), nullable=False),
+    sa.Column('path', sa.String(length=200), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id'),
