@@ -53,8 +53,6 @@ def upload_photo(username):
             filename = secure_filename(file.filename)
             print("=======FOUND FILE======== %s" % filename)
 
-
-
             usr = User.query.filter_by(username=username).first()
             if (usr):
 
@@ -89,14 +87,16 @@ def do_test_upload(form):
                 #filename = secure_filename(file.filename)
                 return 'Error: file type not allowed'
 
+            #file is ok
+            filename = secure_filename(file.filename)
+            print("=======FOUND FILE======== %s" % filename)
+
             temp_file_path = save_temp_photo(usr, file)
+            photos, fname = get_transformations(temp_file_path)
 
+            save_photos(usr, photos, fname)
 
-            # TODO get the files themselves
-            photos = get_transformations(temp_file_path)
-
-            #save_photos(usr, photos)
-            return '.'.join(str(e) for e in photos)
+            return "upload: " + filename + " successful"
         else:
             return "ERROR: Wrong password"
     return "ERROR: user does not exist"
