@@ -13,7 +13,7 @@
             margin: 5px;
             border: 1px solid #ccc;
             float: left;
-            width: 180px;
+            width: 300px;
         }
 
         div.gallery:hover {
@@ -21,8 +21,8 @@
         }
 
         div.gallery img {
-            width: 100%;
-            height: auto;
+            width: auto;
+            height: 200px;
         }
 
         div.desc {
@@ -70,7 +70,7 @@
       <a target="_blank" href="{{url_for('display_images', photo_id=thumb.photo_id)}}">
         <img src="{{url_for('display_image', photo_id=thumb.photo_id, type=thumb.type)}}" alt="" height="200">
       </a>
-      <div class="desc">{{thumb.photo_id}}</div>
+      <div class="desc">photo_id: {{thumb.photo_id}}</div>
     </div>
 
     {% endfor %}
