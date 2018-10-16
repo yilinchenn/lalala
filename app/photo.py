@@ -13,15 +13,26 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 @webapp.route('/photos/<photo_id>', methods=["GET"])
 def display_images(photo_id):
-    return render_template("photo_detail.html", photo_id= photo_id, types = PhotoType)
-
+    user = User.query.filter(User.photos.any(Photo.photo_id==photo_id)).first()
+    print("=================================User %s========================" % user.username)
+    #cannot display the page if not logged in
+    if(check_session(user.username)):
+        return render_template("photo_detail.html", photo_id= photo_id, types = PhotoType)
+    flash("Error: you are not logged in")
+    return redirect(url_for('login'))
 
 @webapp.route('/photo/<photo_id>/<type>', methods=["GET"])
 def display_image(photo_id, type):
-    photo = Photo.query.filter_by(photo_id=photo_id, type=type).first()
-    print("==============================DISPLAY======================= %s" % photo.path)
+    user = User.query.filter(User.photos.any(Photo.photo_id==photo_id)).first()
+    print("=================================User %s========================" % user.username)
+    #cannot display the page if not logged in
+    if(check_session(user.username)):
+        photo = Photo.query.filter_by(photo_id=photo_id, type=type).first()
+        print("==============================DISPLAY======================= %s" % photo.path)
+        return send_from_directory(os.path.dirname(photo.path), photo.path.split('/')[-1], as_attachment=True)
+    flash("Error: you are not logged in")
+    return redirect(url_for('login'))
 
-    return send_from_directory(os.path.dirname(photo.path), photo.path.split('/')[-1], as_attachment=True)
 
 @webapp.route('/test/FileUpload', methods=["GET", "POST"])
 def testUpload():
