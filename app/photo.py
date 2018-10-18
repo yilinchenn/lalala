@@ -14,7 +14,7 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 @webapp.route('/photos/<photo_id>', methods=["GET"])
 def display_images(photo_id):
     user = User.query.filter(User.photos.any(Photo.photo_id==photo_id)).first()
-    print("=================================User %s========================" % user.username)
+    #print("=================================User %s========================" % user.username)
     #cannot display the page if not logged in
     if(check_session(user.username)):
         return render_template("photo_detail.html", photo_id= photo_id, types = PhotoType)
@@ -115,7 +115,9 @@ def do_test_upload(form):
 
 def save_temp_photo(user, photo):
     #temp path
-    path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + "temp/" + photo.filename
+    rand_str = str(uuid.uuid4())
+    new_filename = rand_str + "." + photo.filename.split('.')[-1]
+    path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + "temp/" + new_filename
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
     photo.save(path)
@@ -143,7 +145,7 @@ def save_photos(user, photos, fname):
     #try to save to file
     try:
         for index, photo in enumerate(photos):
-            print("========================SAVING========================= %s" % db_photos[index].path)
+            #print("========================SAVING========================= %s" % db_photos[index].path)
             os.makedirs(os.path.dirname(db_photos[index].path), exist_ok=True)
             photo.save(filename=db_photos[index].path)
     except:
@@ -177,14 +179,14 @@ def get_thumbs(username):
 # 2 = whatever
 # 3 = llallala
 def get_transformations(fname):
-    print ("!!!!!!!!!!!!!!!!!!!!!!!enter transformation!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #print ("!!!!!!!!!!!!!!!!!!!!!!!enter transformation!!!!!!!!!!!!!!!!!!!!!!!!!!")
     img = Image(filename=fname)
-    print ("!!!!!!!!!!!!!!!!!filename=%s!!!!!!!!!!!!!!!!!!!!!!!!!!!"%fname)
+    #print ("!!!!!!!!!!!!!!!!!filename=%s!!!!!!!!!!!!!!!!!!!!!!!!!!!"%fname)
     photos = []
     for type in PhotoType:
         i = img.clone()
         if type == PhotoType.THUMBNAIL:
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!thumbnail!!!!!!!!!!!!!!!!!!!!")
+            #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!thumbnail!!!!!!!!!!!!!!!!!!!!")
             height = 200
             width = int (img.width * height / img.height)
             i.resize(width, height)
@@ -193,7 +195,7 @@ def get_transformations(fname):
         elif type == PhotoType.FLIPPED:
             i.flip()
         photos.append(i)
-    print ("!!!!!!!!!!!!!!!!!!!!!!!finish transform!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #print ("!!!!!!!!!!!!!!!!!!!!!!!finish transform!!!!!!!!!!!!!!!!!!!!!!!!!")
     return photos,fname
 
 def allowed_file(filename):

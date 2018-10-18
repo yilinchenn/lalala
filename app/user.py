@@ -27,7 +27,7 @@ def do_update_user(form):
 
 def do_create_user(form):
     if(form):
-        print(form)
+        #print(form)
         #check if user already exist
         username = form.get("username")
         try_find = User.query.filter(User.username == username).first()
@@ -39,7 +39,7 @@ def do_create_user(form):
                    password=form.get("password"),
                    is_admin=False)
 
-        print(usr)
+        #print(usr)
         db.session.add(usr)
         db.session.commit()
 
