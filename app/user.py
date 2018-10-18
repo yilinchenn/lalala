@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, redirect, session
+from flask import render_template, url_for, request, redirect, session, flash
 from app import webapp
 from app.models import User
 from app import db
@@ -28,9 +28,17 @@ def do_update_user(form):
 def do_create_user(form):
     if(form):
         print(form)
+        #check if user already exist
+        username = form.get("username")
+        try_find = User.query.filter(User.username == username).first()
+        if try_find is not None:
+            flash("Error: User: " + username + " already exists!")
+            return render_template("user_form.html")
+
         usr = User(username=form.get("username"),
                    password=form.get("password"),
                    is_admin=False)
+
         print(usr)
         db.session.add(usr)
         db.session.commit()
