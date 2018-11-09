@@ -134,7 +134,9 @@ def do_test_upload(form):
 
 def save_temp_photo(user, photo):
     #temp path
-    path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + "temp/" + photo.filename
+    rand_str = str(uuid.uuid4())
+    new_filename = rand_str + "." + photo.filename.split('.')[-1]
+    path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + "temp/" + new_filename
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
     photo.save(path)
@@ -177,6 +179,7 @@ def save_photos(user, photos, fname):
             bucket.put_object(Key=db_photos[index].path, Body=photo.make_blob())
             object_acl = s3.ObjectAcl(BUCKET, db_photos[index].path)
             response = object_acl.put(ACL='public-read')
+
     except:
         #if files are not saved then do not save to db
         db.session.rollback()
