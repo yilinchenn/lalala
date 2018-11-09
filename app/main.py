@@ -4,7 +4,6 @@ from app import webapp
 from app.login import check_session
 from app.photo import get_thumbs, get_transformations
 
-
 @webapp.route('/')
 def main():
     if session.get('username'):

@@ -9,27 +9,46 @@ from app.login import check_session
 from app import db
 from wand.image import Image
 
+import boto3
+import botocore
+
+BUCKET = 'photos-ece1779-a2'
+
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 @webapp.route('/photos/<photo_id>', methods=["GET"])
 def display_images(photo_id):
     user = User.query.filter(User.photos.any(Photo.photo_id==photo_id)).first()
-    print("=================================User %s========================" % user.username)
+    #print("=================================User %s========================" % user.username)
     #cannot display the page if not logged in
     if(check_session(user.username)):
-        return render_template("photo_detail.html", photo_id= photo_id, types = PhotoType)
+        links = []
+        for t in PhotoType:
+            links.append(display_image(photo_id, t.value))
+        #print("++++++++++++++++++++++++++++++++++++++++++++++++++")
+        #print(links)
+        return render_template("photo_detail.html", links = links, types = PhotoType)
     flash("Error: you are not logged in")
     return redirect(url_for('login'))
 
 @webapp.route('/photo/<photo_id>/<type>', methods=["GET"])
 def display_image(photo_id, type):
     user = User.query.filter(User.photos.any(Photo.photo_id==photo_id)).first()
-    print("=================================User %s========================" % user.username)
+    #print("=================================User %s========================" % user.username)
     #cannot display the page if not logged in
     if(check_session(user.username)):
         photo = Photo.query.filter_by(photo_id=photo_id, type=type).first()
-        print("==============================DISPLAY======================= %s" % photo.path)
-        return send_from_directory(os.path.dirname(photo.path), photo.path.split('/')[-1], as_attachment=True)
+        #print("==============================DISPLAY======================= %s" % photo.path)
+
+
+        #return s3 link for this photo
+        s3 = boto3.client('s3')
+        config = s3._client_config
+        config.signature_version = botocore.UNSIGNED
+        return boto3.client('s3', config=config).generate_presigned_url('get_object', ExpiresIn=0,Params={'Bucket': BUCKET, 'Key': photo.path})
+
+        #print(photo.key)
+        #return send_from_directory(os.path.dirname(photo.path), photo.path.split('/')[-1], as_attachment=True)
     flash("Error: you are not logged in")
     return redirect(url_for('login'))
 
@@ -62,7 +81,7 @@ def upload_photo(username):
 
             #file is ok
             filename = secure_filename(file.filename)
-            print("=======FOUND FILE======== %s" % filename)
+            #print("=======FOUND FILE======== %s" % filename)
 
             usr = User.query.filter_by(username=username).first()
             if (usr):
@@ -100,7 +119,7 @@ def do_test_upload(form):
 
             #file is ok
             filename = secure_filename(file.filename)
-            print("=======FOUND FILE======== %s" % filename)
+            #print("=======FOUND FILE======== %s" % filename)
 
             temp_file_path = save_temp_photo(usr, file)
             photos, fname = get_transformations(temp_file_path)
@@ -135,17 +154,29 @@ def save_photos(user, photos, fname):
         type = index
         #new filename = type.[original file type]
         new_file_name = photo_id + "." + fname.split('.')[-1]
-        path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + str(type) + "/" + new_file_name
+        #path = webapp.config['UPLOAD_FOLDER'] + "/" + user.username + "/" + str(type) + "/" + new_file_name
+
+        #path is now filename in s3 bucket
+        #which is photoid_type.whatever
+        path = photo_id + "_" + str(type) + "." + fname.split('.')[-1]
         p = Photo(photo_id=photo_id, type=type, path=path)
         db_photos.append(p)
         user.photos.append(p)
 
-    #try to save to file
+    #try to save to s3
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(BUCKET)
+
     try:
         for index, photo in enumerate(photos):
-            print("========================SAVING========================= %s" % db_photos[index].path)
-            os.makedirs(os.path.dirname(db_photos[index].path), exist_ok=True)
-            photo.save(filename=db_photos[index].path)
+            #print("========================SAVING========================= %s" % db_photos[index].path)
+            #os.makedirs(os.path.dirname(db_photos[index].path), exist_ok=True)
+            #photo.save(filename=db_photos[index].path)
+
+            #put to s3 bucket
+            bucket.put_object(Key=db_photos[index].path, Body=photo.make_blob())
+            object_acl = s3.ObjectAcl(BUCKET, db_photos[index].path)
+            response = object_acl.put(ACL='public-read')
     except:
         #if files are not saved then do not save to db
         db.session.rollback()
@@ -161,13 +192,13 @@ def get_thumbs(username):
     #print(usr)
     photos = usr.photos
     #print(photos)
-    thumbnails = []
+    thumbnails = {}
 
     for photo in photos:
         if photo.type == PhotoType.THUMBNAIL.value:
-            #print("=========================================")
-            #print(photo)
-            thumbnails.append(photo)
+
+            #get s3 link for thumb
+            thumbnails[photo.photo_id] = display_image(photo.photo_id, photo.type)
     return thumbnails
 
 
@@ -177,14 +208,14 @@ def get_thumbs(username):
 # 2 = whatever
 # 3 = llallala
 def get_transformations(fname):
-    print ("!!!!!!!!!!!!!!!!!!!!!!!enter transformation!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #print ("!!!!!!!!!!!!!!!!!!!!!!!enter transformation!!!!!!!!!!!!!!!!!!!!!!!!!!")
     img = Image(filename=fname)
-    print ("!!!!!!!!!!!!!!!!!filename=%s!!!!!!!!!!!!!!!!!!!!!!!!!!!"%fname)
+    #print ("!!!!!!!!!!!!!!!!!filename=%s!!!!!!!!!!!!!!!!!!!!!!!!!!!"%fname)
     photos = []
     for type in PhotoType:
         i = img.clone()
         if type == PhotoType.THUMBNAIL:
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!thumbnail!!!!!!!!!!!!!!!!!!!!")
+            #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!thumbnail!!!!!!!!!!!!!!!!!!!!")
             height = 200
             width = int (img.width * height / img.height)
             i.resize(width, height)
@@ -193,7 +224,7 @@ def get_transformations(fname):
         elif type == PhotoType.FLIPPED:
             i.flip()
         photos.append(i)
-    print ("!!!!!!!!!!!!!!!!!!!!!!!finish transform!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #print ("!!!!!!!!!!!!!!!!!!!!!!!finish transform!!!!!!!!!!!!!!!!!!!!!!!!!")
     return photos,fname
 
 def allowed_file(filename):

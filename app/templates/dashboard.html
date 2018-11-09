@@ -59,25 +59,20 @@
      <input type="reset">
 </form>
 
-
-
 <div class = "gs">
     <h2>Your photos</h2>
 
-    {% for thumb in thumbs %}
+    {% for id,link in thumbs.items() %}
 
     <div class="gallery">
-      <a target="_blank" href="{{url_for('display_images', photo_id=thumb.photo_id)}}">
-        <img src="{{url_for('display_image', photo_id=thumb.photo_id, type=thumb.type)}}" alt="" height="200">
+      <a target="_blank" href="{{url_for('display_images', photo_id=id)}}">
+        <img src="{{link}}" alt="" height="200">
       </a>
-      <div class="desc">photo_id: {{thumb.photo_id}}</div>
+      <div class="desc">photo_id: {{id}}</div>
     </div>
 
     {% endfor %}
 </div>
-
-
-
 
 </body>
 </html>

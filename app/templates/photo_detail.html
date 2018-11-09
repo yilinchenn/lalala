@@ -13,17 +13,11 @@
 
     <div class="gallery">
         <p> {{type.name}} </p>
-        <img src="{{url_for('display_image', photo_id=photo_id, type=type.value)}}" alt="">
+        <img src="{{links[type.value]}}" alt="">
     </div>
 
     {% endfor %}
 </div>
-
-
-
-
-
-
 
 </body>
 </html>
