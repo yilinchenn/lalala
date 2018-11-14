@@ -19,6 +19,7 @@ config_name = os.getenv('FLASK_CONFIG')
 webapp = Flask(__name__, instance_relative_config=True)
 webapp.config.from_object(app_config[config_name])
 webapp.config.from_pyfile('config.py')
+webapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(webapp)
 migrate = Migrate(webapp, db)
 
